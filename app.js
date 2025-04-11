@@ -2,11 +2,12 @@
 
 import express from "express";
 import { engine } from "express-handlebars";
-import { join } from "node:path"
-import fortunes from "./lib/data.json" assert {type: "json"};
+import { dirname, join } from "node:path"
+import { about, home, notFound, serverError } from "./routes/handlers.js"
+import { fileURLToPath } from "node:url";
 
-
-const __dirname = import.meta.dirname;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const app = express();
 const PORT = 3030;
 const HOST = "[::1]"
@@ -15,24 +16,12 @@ app.set("view engine", ".hbs");
 app.set("views", "./views");
 
 app.use(express.static(join(__dirname, "/public")))
-app.get('/', (req, res) => res.render('home'));
-app.get('/about', (req, res) => {
-const randomFortune = fortunes[Math.floor(Math.random()*fortunes.length)]    
-    res.render('about', {fortune: randomFortune})
-})
+app.get('/', home);
+app.get('/about',  about)
 // custom 404 page
-app.use((req, res) => {
-res.status(404)
-res.render('404')
-})
+app.use(notFound)
 // custom 500 page
-app.use((err, req, res, next) => {
-console.error(err.message)
-res.status(500)
-res.render('500')
-})
+app.use(serverError)
 
 
-
-
-app.listen(PORT, () => console.log(`Server running on http://${HOST}:${PORT}`));
+export default app;
